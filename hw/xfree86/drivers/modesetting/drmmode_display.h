@@ -141,6 +141,8 @@ typedef struct {
 
     Bool dri2_enable;
     Bool present_enable;
+
+    Bool direct_video;
 } drmmode_rec, *drmmode_ptr;
 
 typedef struct {
@@ -226,6 +228,8 @@ typedef struct {
 
     Bool enable_flipping;
     Bool flipping_active;
+
+    Bool direct_video_dirty;
 } drmmode_crtc_private_rec, *drmmode_crtc_private_ptr;
 
 typedef struct {
@@ -327,5 +331,7 @@ Bool drmmode_flip_fb(xf86CrtcPtr crtc, int *timeout);
 PixmapPtr drmmode_create_pixmap_header(ScreenPtr pScreen, int width, int height,
                                        int depth, int bitsPerPixel, int devKind,
                                        void *pPixData);
+
+Bool drmmode_direct_video(xf86CrtcPtr crtc, PixmapPtr video_pixmap, pixman_f_transform_t *transform, RegionPtr clip);
 
 #endif
