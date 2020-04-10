@@ -2606,6 +2606,22 @@ drmmode_output_get_modes(xf86OutputPtr output)
 
         drmmode_ConvertFromKMode(output->scrn, &koutput->modes[i], Mode);
 
+        if (Mode->HDisplay == 3840 && Mode->VDisplay == 1080) {
+            drmmode_output->need_remap = TRUE;
+
+            xf86DrvMsgVerb(output->scrn->scrnIndex, X_INFO, 0,
+                           "Found remap connector with 3840x1080: %d.\n",
+                           koutput->connector_id);
+        }
+
+        if (Mode->HTotal > Mode->HDisplay * 2) {
+            drmmode_output->is_dummy = TRUE;
+
+            xf86DrvMsgVerb(output->scrn->scrnIndex, X_INFO, 0,
+                           "Found dummy connector with invalid htotal: %d.\n",
+                           koutput->connector_id);
+        }
+
         if (drmmode_output->need_remap) {
             Mode->HDisplay /= 2;
             Mode->VDisplay *= 2;
