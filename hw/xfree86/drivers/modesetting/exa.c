@@ -242,7 +242,8 @@ ms_exa_solid(PixmapPtr pPixmap, int x1, int y1, int x2, int y2)
     int height = y2 - y1;
 
     /* skip small images */
-    if (width * height <= 4096)
+    if (rga_get_pixmap_format(pPixmap) != RK_FORMAT_YCbCr_420_SP &&
+        width * height <= 4096)
         goto bail;
 
     if (!rga_prepare_info(pPixmap, &dst_info, x1, y1, x2 - x1, y2 - y1))
@@ -334,7 +335,9 @@ ms_exa_copy(PixmapPtr pDstPixmap, int srcX, int srcY,
     rga_info_t tmp_info = {0};
 
     /* skip small images */
-    if (width * height <= 4096)
+    if (rga_get_pixmap_format(pSrcPixmap) != RK_FORMAT_YCbCr_420_SP &&
+        rga_get_pixmap_format(pDstPixmap) != RK_FORMAT_YCbCr_420_SP &&
+        width * height <= 4096)
         goto bail;
 
     if (!rga_prepare_info(pSrcPixmap, &src_info, srcX, srcY, width, height))
@@ -520,7 +523,9 @@ ms_exa_composite(PixmapPtr pDst, int srcX, int srcY,
     int sw, sh;
 
     /* skip small images */
-    if (width * height <= 4096)
+    if (rga_get_pixmap_format(pSrc) != RK_FORMAT_YCbCr_420_SP &&
+        rga_get_pixmap_format(pDst) != RK_FORMAT_YCbCr_420_SP &&
+        width * height <= 4096)
         goto bail;
 
     if (t)
@@ -595,7 +600,8 @@ ms_exa_upload_to_screen(PixmapPtr pDst, int x, int y, int w, int h,
         return FALSE;
 
     /* skip small images */
-    if (w * h <= 4096)
+    if (rga_get_pixmap_format(pDst) != RK_FORMAT_YCbCr_420_SP &&
+        w * h <= 4096)
         return FALSE;
 
     if (!rga_check_pixmap(pDst))
@@ -656,7 +662,8 @@ ms_exa_download_from_screen(PixmapPtr pSrc, int x, int y, int w, int h,
         return FALSE;
 
     /* skip small images */
-    if (w * h <= 4096)
+    if (rga_get_pixmap_format(pSrc) != RK_FORMAT_YCbCr_420_SP &&
+        w * h <= 4096)
         return FALSE;
 
     if (!rga_check_pixmap(pSrc))
@@ -960,9 +967,6 @@ ms_exa_copy_area_bail(PixmapPtr pSrc, PixmapPtr pDst,
         pDst->drawable.bitsPerPixel != ms->drmmode.kbpp)
         return FALSE;
 
-    if (!pixman_transform_from_pixman_f_transform(&t, transform))
-        return FALSE;
-
     src = CreatePicture(None, &pSrc->drawable,
                         format, 0L, NULL, serverClient, &error);
     if (!src)
@@ -973,9 +977,14 @@ ms_exa_copy_area_bail(PixmapPtr pSrc, PixmapPtr pDst,
     if (!dst)
         goto out;
 
-    error = SetPictureTransform(src, &t);
-    if (error)
-        goto out;
+    if (transform) {
+        if (!pixman_transform_from_pixman_f_transform(&t, transform))
+            goto out;
+
+        error = SetPictureTransform(src, &t);
+        if (error)
+            goto out;
+    }
 
     box = REGION_RECTS(clip);
     n = REGION_NUM_RECTS(clip);
@@ -1029,7 +1038,8 @@ ms_exa_copy_area(PixmapPtr pSrc, PixmapPtr pDst,
         dw = box->x2 - box->x1;
         dh = box->y2 - box->y1;
 
-        pixman_f_transform_bounds(transform, box);
+        if (transform)
+            pixman_f_transform_bounds(transform, box);
 
         sx = max(box->x1, 0);
         sy = max(box->y1, 0);
