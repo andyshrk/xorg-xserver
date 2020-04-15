@@ -4611,6 +4611,16 @@ drmmode_flip_fb(xf86CrtcPtr crtc, int *timeout)
         return TRUE;
     }
 
+#ifdef DUMMY_OUTPUT_LATENCY
+    /* Try to delay real monitors for the dummy one */
+    if (ARRAY_SIZE(drmmode_crtc->flip_fb) > DUMMY_OUTPUT_LATENCY) {
+        int index = drmmode_crtc->current_fb;
+        index += ARRAY_SIZE(drmmode_crtc->flip_fb) - DUMMY_OUTPUT_LATENCY;
+        index %= ARRAY_SIZE(drmmode_crtc->flip_fb);
+        fb = &drmmode_crtc->flip_fb[index];
+    }
+#endif
+
     if (!ms_do_pageflip_bo(screen, &fb->bo, drmmode_crtc,
                            drmmode_crtc->vblank_pipe, TRUE,
                            drmmode_flip_fb_handler, drmmode_flip_fb_abort))

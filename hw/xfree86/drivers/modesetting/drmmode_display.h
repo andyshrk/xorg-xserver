@@ -35,6 +35,8 @@
 #include "exa.h"
 #include "dumb_bo.h"
 
+#define DUMMY_OUTPUT_LATENCY 2
+
 struct gbm_device;
 
 enum drmmode_plane_property {
