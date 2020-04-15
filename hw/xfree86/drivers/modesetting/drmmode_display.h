@@ -234,6 +234,7 @@ typedef struct {
 
     Bool direct_video_dirty;
     Bool is_dummy;
+    Bool need_remap;
 } drmmode_crtc_private_rec, *drmmode_crtc_private_ptr;
 
 typedef struct {
@@ -259,6 +260,7 @@ typedef struct {
     int enc_clone_mask;
     xf86CrtcPtr current_crtc;
     Bool is_dummy;
+    Bool need_remap;
 } drmmode_output_private_rec, *drmmode_output_private_ptr;
 
 typedef struct {
